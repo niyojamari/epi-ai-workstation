@@ -170,11 +170,23 @@ if app_mode == "📥 1. Data Ingestion & Cleaning":
 
     if uploaded_file:
         try:
-            if uploaded_file.name.endswith(".csv"):
-                df_new = pd.read_csv(uploaded_file)
-            else:
-                df_new = pd.read_stata(uploaded_file)
-
+           if uploaded_file.name.endswith('.csv'):
+    df_new = pd.read_csv(uploaded_file)
+else:
+    try:
+        df_new = pd.read_stata(uploaded_file)
+    except ValueError:
+        uploaded_file.seek(0)
+        df_new = pd.read_stata(
+            uploaded_file,
+            convert_categoricals=False
+        )
+        st.info(
+            "ℹ️ Note: Some value labels in this Stata file are not unique "
+            "(e.g. district names repeated across strata like v022). "
+            "Categorical columns were imported as numeric codes. "
+            "This is normal for DHS survey files — your data is intact."
+        )
             # Passive PHI column name scan
             phi_patterns = ["name", "surname", "dob", "birth", "address",
                             "phone", "email", "ssn", "nid", "passport", "postcode", "zip"]
